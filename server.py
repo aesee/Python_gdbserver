@@ -43,28 +43,52 @@ def Checksum(data):
     return checksum & 0xff
 
 def ReadMemory(data):
-    return "2f86"
+    address = data[data.find('m')+1:data.find(',')]
+    numBytes = data[data.find(',')+1:data.find('#')]
+    print("Address:", address, "|| Number of bytes:", numBytes) # Debug information
+    #send this to model and return answer value
+    #THERE IS NO MODEL YET
+    value = "E99" #error code
+    return value 
 
 def ReadRegisters(data):
-    return "123456789abcdef0"
+    #send this to model and return answer value
+    #THERE IS NO MODEL YET
+    #for example we take something from the model
+    #for i in range(32):
+    #    value+=registers[i]
+    value = "123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0"
+    return value
 
 def WriteRegisters(data):
+    registers = []
+    for i in range(32):
+        registers.append(data[1+8*i:9+i*8])
+        #registers[i].send
     return "Ok"
 
 def WriteRegisterN(data):
+    register = data[data.find('P')+1:data.find('=')]
+    value = data[data.find('=')+1:data.find('#')]
+    #register.send-to-the-model
     return "Ok"
 
 def WriteMemory(data):
+    address = data[data.find('m')+1:data.find(',')]
+    numBytes = data[data.find(',')+1:data.find(':')]
+    value = data[data.find(':')+1:data.find('#')]
+    #send this to model
+    #THERE IS NO MODEL YET
     return "Ok"
 
 def LastSignal(data):
     return "S00"
 
 def Step():
-    return LastSignal("OK")
+    return LastSignal("+")
 
 def Continue():
-    return LastSignal("OK")
+    return LastSignal("+")
 
 def Message(data):
     if (data.find('$m') != -1):
@@ -85,11 +109,9 @@ def Message(data):
         return Continue()
     else:
         for key in switch:
-#        if data.startswith(key,2):
             if (data.find(key) != -1):
                 return switch[key]
     return 'Ok'
-#    return switch[i]
 
 class GDBClientHandler(object):
     def __init__(self, clientsocket):
@@ -110,8 +132,8 @@ class GDBClientHandler(object):
         msg, cs = "",""
         data = ''
         pastData = ''
-        ##получаем от клиента по 1кб информации в цикл,
-        ##пока клиент не закончит слать информацию
+        ## getting 1kb of information from client,
+        ## while client send it
         while True:
             pastData=data
             while (data==pastData):
@@ -129,7 +151,7 @@ class GDBClientHandler(object):
             log.write("+$"+str(msg)+"#"+str(cs)[-2:])
             log.write("\n")
 
-        ##закрываем соединение
+        ## close socket
         print("Bye!")
         self.netout.close()
         self.clientsocket.close()
@@ -139,12 +161,12 @@ class GDBClientHandler(object):
 #sock = socket.socket()
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-##устанавливаем связь с клиентом
-#port = 3333
-#sock.bind(('',port))
-sock.bind(('',3333)) ##связываем сокет с хостом и портом
-sock.listen(1) ## максимальное количество подключений в очереди
-conn, addr = sock.accept() ##принимаем новый сокет и адрес клиента
+## setting connection
+port = input("Port = ")
+sock.bind(('',port))
+#sock.bind(('',3333)) ## связываем сокет с хостом и портом
+sock.listen(1) ## max number of connections
+conn, addr = sock.accept() ## getting a new socket and client's address
 GDBClientHandler(conn).run()
 
 #############################################################
