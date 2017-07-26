@@ -1,7 +1,8 @@
 # -- coding: cp1251 --
 import socket
 
-switch = { '$qSupported':'swbreak+;PacketSize=131072', #119?
+switch = { #'$qSupported':'swbreak+;PacketSize=131072', #119?   131072
+           '$qSupported':'PacketSize=131072',
            '$vMustReplyEmpty':'',
            '$Hg0':'OK',
            #'$Hg0':'',
@@ -9,7 +10,7 @@ switch = { '$qSupported':'swbreak+;PacketSize=131072', #119?
            #'$qTStatus':'T1',
            '$qTStatus':'',
            #'+$S05':'S05',
-           '$qfThreadInfo':'m 0',
+           '$qfThreadInfo':'m0',
            #'$qfThreadInfo':'',
            '$qsThreadInfo':'l',
            '$Hc-1':'OK',
@@ -31,9 +32,11 @@ switch = { '$qSupported':'swbreak+;PacketSize=131072', #119?
            '$qTsP':'',
            #'$qL12':'',
            '$qL12':'0x0000000000001000 in ?? ()',
-           'vCont?':'vCont;c',
-           #'$m':'12345',
-            }
+           #'vCont?':'vCont;c',
+           'vCont?':'',
+           'Hc0':'',
+           'c':'',
+           }
 
 def Checksum(data):
     checksum = 0
@@ -48,7 +51,7 @@ def ReadMemory(data):
     print("Address:", address, "|| Number of bytes:", numBytes) # Debug information
     #send this to model and return answer value
     #THERE IS NO MODEL YET
-    value = "E99" #error code
+    value = "2f86" #error code
     return value 
 
 def ReadRegisters(data):
@@ -162,7 +165,7 @@ class GDBClientHandler(object):
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 ## setting connection
-port = input("Port = ")
+port = int(input("Port = "))
 sock.bind(('',port))
 #sock.bind(('',3333)) ## связываем сокет с хостом и портом
 sock.listen(1) ## max number of connections
