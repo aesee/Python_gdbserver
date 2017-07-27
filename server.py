@@ -3,39 +3,32 @@ import socket
 
 switch = { #'$qSupported':'swbreak+;PacketSize=131072', #119?   131072
            '$qSupported':'PacketSize=131072',
-           '$vMustReplyEmpty':'',
+           #'$vMustReplyEmpty':'',
            '$Hg0':'OK',
-           #'$Hg0':'',
-           '$Hg-1':'Ok',
-           #'$qTStatus':'T1',
+           '$Hg-1':'OK',
            '$qTStatus':'',
-           #'+$S05':'S05',
+           #'+$S':'T05',
            '$qfThreadInfo':'m0',
-           #'$qfThreadInfo':'',
            '$qsThreadInfo':'l',
            '$Hc-1':'OK',
-           #'$Hc-1':'',
            '$qC':'',
            '$qAttached':'1',
-           #'$qAttached':'',
            '$qOffsets':'Text=00;Data=00;Bss=0',
-           #'$qOffsets':'',
-           #'$g#67':'xxxxxxxx00000000xxxxxxxx00000000',
-           '$g#67':'00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', 
-           #'$p20':'00',
+            '$g#67':'00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', 
            '$p20':'0010000000000000',
            '$qSymbol':'',
-           '$vKill':'Ok',
+           '$vKill':'OK',
            '+$?':'S00',
-           #'$?':'S05',
            '$qTfV':'',
            '$qTsP':'',
            #'$qL12':'',
            '$qL12':'0x0000000000001000 in ?? ()',
            #'vCont?':'vCont;c',
-           'vCont?':'',
+           #'vCont?':'',
            'Hc0':'',
            'c':'',
+           '$#':'',
+           '$D':'OK'
            }
 
 def Checksum(data):
@@ -51,7 +44,7 @@ def ReadMemory(data):
     print("Address:", address, "|| Number of bytes:", numBytes) # Debug information
     #send this to model and return answer value
     #THERE IS NO MODEL YET
-    value = "2f86" #error code
+    value = "0000803f" #error code
     return value 
 
 def ReadRegisters(data):
@@ -74,7 +67,7 @@ def WriteRegisterN(data):
     register = data[data.find('P')+1:data.find('=')]
     value = data[data.find('=')+1:data.find('#')]
     #register.send-to-the-model
-    return "Ok"
+    return "OK"
 
 def WriteMemory(data):
     address = data[data.find('m')+1:data.find(',')]
@@ -82,18 +75,62 @@ def WriteMemory(data):
     value = data[data.find(':')+1:data.find('#')]
     #send this to model
     #THERE IS NO MODEL YET
-    return "Ok"
+    return "OK"
 
 def LastSignal(data):
     return "S00"
 
 def Step():
-    return LastSignal("+")
+    #return LastSignal("+")
+    return 'T05'
 
 def Continue():
     return LastSignal("+")
 
+def SetMemory(data):
+    address = data[data.find('X')+1:data.find(',')]
+    length = data[data.find(',')+1:data.find(':')]
+    value = data[data.find(':')+1:data.find('#')]
+    #send this to model
+    #THERE IS NO MODEL YET
+    return "OK"
+
+def InsertBreakpoint(data):
+    ztype = data[data.find('Z')+1:data.find(',')]
+    temp = data[data.find(',')+1:]
+    address = temp[:temp.find(',')]
+    value = temp[temp.find(',')+1:data.find('#')]
+    #send this to model
+    #THERE IS NO MODEL YET
+    return "OK"
+
+def DeleteBreakpoint(data):
+    ztype = data[data.find('Z')+1:data.find(',')]
+    temp = data[data.find(',')+1:]
+    address = temp[:temp.find(',')]
+    value = temp[temp.find(',')+1:data.find('#')]
+    #send this to model
+    #THERE IS NO MODEL YET
+    return "OK"
+
+def VQuery(data):
+    if (data.find('$vCont?') != -1):
+        return 'vCont;c;s;t;r start,end'
+    if (data.find('$vCont;s') != -1):
+        return 'vCont;c;s;t;r start,end'
+        
+    if (data.find('$vCtrlC') != -1):
+        printf("Client interrupt the process")
+    if (data.find('$vKill') != -1):
+        printf("Client kill the process")
+    if (data.find('$vStopped') != -1):
+        printf("Client stopped the process")
+    if (data.find('$vMustReplyEmpty') != -1):
+        return ''
+    return "OK"
+
 def Message(data):
+    print('Data: ', data)
     if (data.find('$m') != -1):
         return ReadMemory(data)
     elif (data.find('$g') != -1):
@@ -110,11 +147,24 @@ def Message(data):
         return Step() 
     elif (data.find('$c') != -1):
         return Continue()
+    elif (data.find('$X') != -1):
+        return SetMemory(data)
+    elif (data.find('$Z') != -1):
+        return InsertBreakpoint(data)
+    elif (data.find('$z') != -1):
+        return DeleteBreakpoint(data)
+    elif (data.find('$v') != -1):
+        return VQuery(data)
     else:
         for key in switch:
             if (data.find(key) != -1):
                 return switch[key]
-    return 'Ok'
+    return 'OK'
+
+def parse(data):
+    if data.startswith('$'):
+        data = '$' + data.split('$')[-1]
+    return data
 
 class GDBClientHandler(object):
     def __init__(self, clientsocket):
@@ -128,13 +178,24 @@ class GDBClientHandler(object):
     def send_raw(self, r):
         self.netout.write(r)
         self.netout.flush()
-    
+
+    def TestMessage(self):
+        #msg="OSomeday this server will be fully working but not now!"
+        msg='o48656c6c6f2c20776f726c64210a'
+        cs=Checksum(msg)
+        try:
+            self.send(msg)
+            print("Sending: ", msg)
+        except Exception:
+            print("Client is not answering.")
+   
     def run(self):
         print("connected:", addr)
         log = open("log.txt", 'w')
         msg, cs = "",""
         data = ''
         pastData = ''
+        pastMsg = ''
         ## getting 1kb of information from client,
         ## while client send it
         while True:
@@ -144,15 +205,30 @@ class GDBClientHandler(object):
             log.write(data)
             log.write("\n")
             print("Received: ", data)
-            msg=Message(data)
+            data=parse(data)
+            if (data=='+'):
+                #msg = pastMsg
+                print("there's nothing to answer!")
+                continue
+            else:
+                msg=Message(data)
+                pastMsg = msg
             cs=Checksum(msg)
             try:
                 self.send(msg)
                 print("Sending: ", msg)
             except Exception:
                 print("Client is not answering.")
+
+            ## one time JOKE
+            #if (data=='+$qSymbol::#5b'):
+            #    self.TestMessage()
+
             log.write("+$"+str(msg)+"#"+str(cs)[-2:])
             log.write("\n")
+            
+            if (data == '$D#44'):
+                break
 
         ## close socket
         print("Bye!")
