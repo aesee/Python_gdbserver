@@ -1,10 +1,12 @@
 # -- coding: cp1251 --
+#! /usr/bin/python3
 import socket
 
 switch = { #'$qSupported':'swbreak+;PacketSize=131072', #119?   131072
-           '$qSupported':'PacketSize=131072',
+           '$qSupported':'PacketSize=131072;swbreak+;hwbreak+',
            #'$vMustReplyEmpty':'',
            '$Hg0':'OK',
+           '$S':'T05',
            '$Hg-1':'OK',
            '$qTStatus':'',
            #'+$S':'T05',
@@ -15,7 +17,7 @@ switch = { #'$qSupported':'swbreak+;PacketSize=131072', #119?   131072
            '$qAttached':'1',
            '$qOffsets':'Text=00;Data=00;Bss=0',
             '$g#67':'00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', 
-           '$p20':'0010000000000000',
+           '$p20':'0410000000000000',
            '$qSymbol':'',
            '$vKill':'OK',
            '+$?':'S00',
@@ -114,11 +116,14 @@ def DeleteBreakpoint(data):
     return "OK"
 
 def VQuery(data):
+    if (data.find('$vCont;c') != -1):
+        return 'T0501:7ffff850;40:3000ce98'    
     if (data.find('$vCont?') != -1):
-        return 'vCont;c;s;t;r start,end'
-    if (data.find('$vCont;s') != -1):
-        return 'vCont;c;s;t;r start,end'
-        
+    #    return 'vCont;c;C;s;S'
+        return ""
+    #if ((data.find('$vCont') != -1) and ((data.find('s') != -1) or (data.find('c') != -1) or (data.find('t') != -1))):
+    #    return 'vCont;c;s;t'
+
     if (data.find('$vCtrlC') != -1):
         printf("Client interrupt the process")
     if (data.find('$vKill') != -1):
@@ -155,6 +160,11 @@ def Message(data):
         return DeleteBreakpoint(data)
     elif (data.find('$v') != -1):
         return VQuery(data)
+
+    #elif (data.find('$qOffset') != -1):
+    #    data = '+'
+    #    return 'interrupt'
+
     else:
         for key in switch:
             if (data.find(key) != -1):
@@ -166,12 +176,15 @@ def parse(data):
         data = '$' + data.split('$')[-1]
     return data
 
+###########################################################
+#*********************************************************#
+###########################################################
 class GDBClientHandler(object):
     def __init__(self, clientsocket):
         self.clientsocket = clientsocket
         self.netin = clientsocket.makefile('r')
         self.netout = clientsocket.makefile('w')
-        self.last_pkt = None
+        #self.last_pkt = None
 
     def send(self, msg):
         self.send_raw('+$%s#%.2x' % (msg, Checksum(msg)))
@@ -186,6 +199,16 @@ class GDBClientHandler(object):
         try:
             self.send(msg)
             print("Sending: ", msg)
+        except Exception:
+            print("Client is not answering.")
+
+    def InteruptMessage(self):
+        try:
+            self.netout = clientsocket.makefile('wb')
+            #self.send_raw('0x03')
+            self.send_raw('\003')
+            print("Sending: ", msg)
+            self.netout = clientsocket.makefile('w')
         except Exception:
             print("Client is not answering.")
    
@@ -214,11 +237,21 @@ class GDBClientHandler(object):
                 msg=Message(data)
                 pastMsg = msg
             cs=Checksum(msg)
-            try:
-                self.send(msg)
+            #try:
+            #    self.send(msg)
+            #    print("Sending: ", msg)
+            #except Exception:
+            #    print("Client is not answering.")
+            if (msg == "interrupt"):
+                self.InteruptMessage()
                 print("Sending: ", msg)
-            except Exception:
-                print("Client is not answering.")
+            else:
+                try:
+                    self.send(msg)
+                    print("Sending: ", msg)
+                except Exception:
+                    print("Client is not answering.")
+
 
             ## one time JOKE
             #if (data=='+$qSymbol::#5b'):
@@ -227,11 +260,12 @@ class GDBClientHandler(object):
             log.write("+$"+str(msg)+"#"+str(cs)[-2:])
             log.write("\n")
             
-            if (data == '$D#44'):
+            if ((data == '$D#44') or (data == '\003')):
                 break
 
         ## close socket
         print("Bye!")
+        self.TestMessage()
         self.netout.close()
         self.clientsocket.close()
         log.close()
@@ -243,10 +277,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 ## setting connection
 port = int(input("Port = "))
 sock.bind(('',port))
-#sock.bind(('',3333)) ## связываем сокет с хостом и портом
+#sock.bind(('',3333)) ##
 sock.listen(1) ## max number of connections
 conn, addr = sock.accept() ## getting a new socket and client's address
 GDBClientHandler(conn).run()
-
-#############################################################
-#def qL12():   

@@ -5,6 +5,10 @@ Server-client stub-application
 
 What's new:
 
+** v0.45 05/08/2017
+Some experiments with backend logic, nothing for typical users.<br>
+Trying understand how interrupts work.
+
 ** v0.4 27/07/2017 **
 Working stub without errors. All values are hardcoded.
 
