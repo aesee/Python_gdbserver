@@ -6,7 +6,7 @@ switch = { #'$qSupported':'swbreak+;PacketSize=131072', #119?   131072
            '$qSupported':'PacketSize=131072;swbreak+;hwbreak+',
            #'$vMustReplyEmpty':'',
            '$Hg0':'OK',
-           '$S':'T05',
+           #'$S':'T05',
            '$Hg-1':'OK',
            '$qTStatus':'',
            #'+$S':'T05',
@@ -17,17 +17,18 @@ switch = { #'$qSupported':'swbreak+;PacketSize=131072', #119?   131072
            '$qAttached':'1',
            '$qOffsets':'Text=00;Data=00;Bss=0',
             '$g#67':'00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', 
-           '$p20':'0410000000000000',
+           '$p20':'0000010000000000',
            '$qSymbol':'',
            '$vKill':'OK',
            '+$?':'S00',
            '$qTfV':'',
            '$qTsP':'',
            #'$qL12':'',
-           '$qL12':'0x0000000000001000 in ?? ()',
+           #'$qL12':'0x0000000000021000 in ?? ()',
            #'vCont?':'vCont;c',
            #'vCont?':'',
-           'Hc0':'',
+           #'Hc0':'',
+           'Hc0':'OK',
            'c':'',
            '$#':'',
            '$D':'OK'
@@ -84,7 +85,8 @@ def LastSignal(data):
 
 def Step():
     #return LastSignal("+")
-    return 'T05'
+    #return 'T05'
+    return 'S05'
 
 def Continue():
     return LastSignal("+")
@@ -193,7 +195,7 @@ class GDBClientHandler(object):
         self.netout.flush()
 
     def TestMessage(self):
-        #msg="OSomeday this server will be fully working but not now!"
+        #msg="oSomeday this server will be fully working but not now!"
         msg='o48656c6c6f2c20776f726c64210a'
         cs=Checksum(msg)
         try:
