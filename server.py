@@ -2,36 +2,28 @@
 #! /usr/bin/python3
 import socket
 
-switch = { #'$qSupported':'swbreak+;PacketSize=131072', #119?   131072
-           '$qSupported':'PacketSize=131072;swbreak+;hwbreak+',
-           #'$vMustReplyEmpty':'',
+switch = { '$qSupported':'PacketSize=131072;swbreak+;hwbreak+',
            '$Hg0':'OK',
-           #'$S':'T05',
            '$Hg-1':'OK',
            '$qTStatus':'',
-           #'+$S':'T05',
            '$qfThreadInfo':'m0',
            '$qsThreadInfo':'l',
            '$Hc-1':'OK',
            '$qC':'',
            '$qAttached':'1',
-           '$qOffsets':'Text=00;Data=00;Bss=0',
-            '$g#67':'00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', 
+           '$qOffsets':'Text=00;Data=00;Bss=0', 
            '$p20':'0000010000000000',
-           '$qSymbol':'',
+           '$qSymbol':'OK',
            '$vKill':'OK',
            '+$?':'S00',
            '$qTfV':'',
            '$qTsP':'',
-           #'$qL12':'',
-           #'$qL12':'0x0000000000021000 in ?? ()',
-           #'vCont?':'vCont;c',
-           #'vCont?':'',
-           #'Hc0':'',
            'Hc0':'OK',
            'c':'',
            '$#':'',
-           '$D':'OK'
+           '$D':'OK',
+           '$!':'OK',
+           '$g#67':'00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', 
            }
 
 def Checksum(data):
@@ -81,15 +73,16 @@ def WriteMemory(data):
     return "OK"
 
 def LastSignal(data):
-    return "S00"
+    return "S05"
 
 def Step():
     #return LastSignal("+")
     #return 'T05'
-    return 'S05'
+    return 'S00'
 
 def Continue():
-    return LastSignal("+")
+    #return LastSignal("+")
+    return 'S05'
 
 def SetMemory(data):
     address = data[data.find('X')+1:data.find(',')]
@@ -196,7 +189,7 @@ class GDBClientHandler(object):
 
     def TestMessage(self):
         #msg="oSomeday this server will be fully working but not now!"
-        msg='o48656c6c6f2c20776f726c64210a'
+        msg='O48656c6c6f2c20776f726c64210a'
         cs=Checksum(msg)
         try:
             self.send(msg)
@@ -207,7 +200,6 @@ class GDBClientHandler(object):
     def InteruptMessage(self):
         try:
             self.netout = clientsocket.makefile('wb')
-            #self.send_raw('0x03')
             self.send_raw('\003')
             print("Sending: ", msg)
             self.netout = clientsocket.makefile('w')
@@ -233,6 +225,7 @@ class GDBClientHandler(object):
             data=parse(data)
             if (data=='+'):
                 #msg = pastMsg
+                #self.TestMessage()
                 print("there's nothing to answer!")
                 continue
             else:
@@ -267,7 +260,7 @@ class GDBClientHandler(object):
 
         ## close socket
         print("Bye!")
-        self.TestMessage()
+        ##self.TestMessage()
         self.netout.close()
         self.clientsocket.close()
         log.close()
