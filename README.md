@@ -5,6 +5,9 @@ Server-client stub-application
 
 What's new:
 
+** v0.6 11/08/2017
+Code was refactored. The new structure.
+
 ** v0.5 10/08/2017
 Interrupts and output value processor were added.
 

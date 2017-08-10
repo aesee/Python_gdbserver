@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# before run it at first time do following in this directory:
+# chmod 555 run
+
+dir=$(pwd)
+cd $ dir / sources
+python3 main.py
