@@ -33,14 +33,26 @@ def Checksum(data):
     #return hex(checksum)[-2:]
     return checksum & 0xff
 
+def Output(data):
+    # data is decimal value
+    value = hex(data)[2:]
+    if (len(value) % 2) == 1:
+        value = '0' + value
+    word = ''
+    for i in range(len(value) // 2):
+        word += value[-2:]
+        value = value[:-2]
+    # int(a,16) -> convert to decimal
+    return word
+
 def ReadMemory(data):
     address = data[data.find('m')+1:data.find(',')]
     numBytes = data[data.find(',')+1:data.find('#')]
     print("Address:", address, "|| Number of bytes:", numBytes) # Debug information
     #send this to model and return answer value
     #THERE IS NO MODEL YET
-    value = "0000803f" #error code
-    return value 
+    value = 115 
+    return Output(value) 
 
 def ReadRegisters(data):
     #send this to model and return answer value
@@ -189,7 +201,8 @@ class GDBClientHandler(object):
 
     def TestMessage(self):
         #msg="oSomeday this server will be fully working but not now!"
-        msg='O48656c6c6f2c20776f726c64210a'
+        msg=b'Hello'
+        msg='O'+msg
         cs=Checksum(msg)
         try:
             self.send(msg)

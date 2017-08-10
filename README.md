@@ -5,6 +5,9 @@ Server-client stub-application
 
 What's new:
 
+** v0.5 10/08/2017
+Interrupts and output value processor were added.
+
 ** v0.45 05/08/2017
 Some experiments with backend logic, nothing for typical users.<br>
 Trying understand how interrupts work.
