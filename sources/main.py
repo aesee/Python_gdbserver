@@ -1,5 +1,5 @@
+#!/usr/bin/python3
 # -- coding: cp1251 --
-#! /usr/bin/python3
 import socket
 
 #import local modules

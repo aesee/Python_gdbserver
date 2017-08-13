@@ -9,6 +9,7 @@ r_value = var.registers
 ls_value = var.lastSignal
 s_value = var.step
 c_value = var.cont
+pc_value = var.pc
 
 # Functions proceeding information
 
@@ -120,8 +121,7 @@ def VQuery(data):
 
 def PCQuery(data):
     #
-    value = 10000
-    return Output(value)
+    return Output(pc_value)
 
 mSwitch={
     '$m':ReadMemory,
@@ -144,11 +144,8 @@ def Message(data):
     for key in mSwitch:
         if (data.find(key) != -1):
             return mSwitch[key](data)
-    #elif (data.find('$qOffset') != -1):
-    #    data = '+'
-    #    return 'interrupt'
     else:
         for key in config.switch:
             if (data.find(key) != -1):
                 return config.switch[key]
-    return ''
+    return 'OK'

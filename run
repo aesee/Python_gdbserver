@@ -1,8 +1,7 @@
 #!/bin/bash
 
-# before run it at first time do following in this directory:
-# chmod 555 run
+# You need to type following command before use it:
+# chmod 755 run
 
-dir=$(pwd)
-cd $ dir / sources
-python3 main.py
+cd $(pwd) / sources
+python3 $(pwd)/sources/main.py

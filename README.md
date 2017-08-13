@@ -1,8 +1,8 @@
-# Python_gdbserver
-
+# gdbserver
+ on Python
 
 Server-client stub-application
-
+ for remote debugging.
 What's new:
 
 ** v0.6 11/08/2017
