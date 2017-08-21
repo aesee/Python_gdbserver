@@ -1,6 +1,7 @@
 # -- coding: cp1251 --
 #! /usr/bin/python3
 import config
+import binascii
 
 # variables for tests
 import var
@@ -81,7 +82,12 @@ def Continue(data):
 def SetMemory(data):
     address = data[data.find('X')+1:data.find(',')]
     length = data[data.find(',')+1:data.find(':')]
-    value = data[data.find(':')+1:data.find('#')]
+    value_raw = data[data.find(':')+1:data.find('#')]  # take the value from binary
+    value_raw = value_raw.encode()                     # encode it to bytes
+    value = binascii.b2a_hex(value_raw)                # encode it to hex
+    value = value.decode('ascii')                      # encode it to human view
+    # we need to change a query of chars in this word!
+    print('Value ', value, ' in memory ', address)     # now let's see what we've got
     #send this to model
     #THERE IS NO MODEL YET
     return "OK"

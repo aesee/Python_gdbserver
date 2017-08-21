@@ -2,14 +2,15 @@
 # -- coding: cp1251 --
 import socket
 
-#import local modules
+# import local modules
 import helper
+
 
 def Checksum(data):
     checksum = 0
     for c in data:
         checksum += ord(c)
-    #return hex(checksum)[-2:]
+    # return hex(checksum)[-2:]
     return checksum & 0xff
 
 def parse(data):
@@ -22,16 +23,17 @@ class GDBClientHandler(object):
         self.clientsocket = clientsocket
         self.netin = clientsocket.makefile('r')
         self.netout = clientsocket.makefile('w')
-        #self.last_pkt = None
+        # self.last_pkt = None
 
     def send(self, msg):
         self.send_raw('+$%s#%.2x' % (msg, Checksum(msg)))
+
     def send_raw(self, r):
         self.netout.write(r)
         self.netout.flush()
 
     def TestMessage(self):
-        #msg="oSomeday this server will be fully working but not now!"
+        # msg="oSomeday this server will be fully working but not now!"
         msg=b'Hello'
         msg='O'+msg
         cs=Checksum(msg)
