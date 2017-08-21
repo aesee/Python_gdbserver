@@ -16,7 +16,7 @@ pc_value = var.pc
 
 def Output(data):
     # data is decimal value
-    #value = hex(data)[2:]
+    # value = hex(data)[2:]
     value = str(data)
     if (len(value) % 2) == 1:
         value = '0' + value
@@ -86,7 +86,8 @@ def SetMemory(data):
     value_raw = value_raw.encode()                     # encode it to bytes
     value = binascii.b2a_hex(value_raw)                # encode it to hex
     value = value.decode('ascii')                      # encode it to human view
-    # we need to change a query of chars in this word!
+    value = Output(value)                              # change a query of characters in word
+    # also if variable is float you can run convert.hexToFloat
     print('Value ', value, ' in memory ', address)     # now let's see what we've got
     #send this to model
     #THERE IS NO MODEL YET
@@ -111,21 +112,21 @@ def DeleteBreakpoint(data):
     return "OK"
 
 def VQuery(data):
-    if (data.find('$vCont;c') != -1):
+    if data.find('$vCont;c') != -1:
         return 'T0501:7ffff850;40:3000ce98'    
-    if (data.find('$vCont?') != -1):
+    if data.find('$vCont?') != -1:
     #    return 'vCont;c;C;s;S'
         return ""
     #if ((data.find('$vCont') != -1) and ((data.find('s') != -1) or (data.find('c') != -1) or (data.find('t') != -1))):
     #    return 'vCont;c;s;t'
 
-    if (data.find('$vCtrlC') != -1):
-        printf("Client interrupt the process")
-    if (data.find('$vKill') != -1):
-        printf("Client kill the process")
-    if (data.find('$vStopped') != -1):
-        printf("Client stopped the process")
-    if (data.find('$vMustReplyEmpty') != -1):
+    if data.find('$vCtrlC') != -1:
+        print("Client interrupt the process")
+    if data.find('$vKill') != -1:
+        print("Client kill the process")
+    if data.find('$vStopped') != -1:
+        print("Client stopped the process")
+    if data.find('$vMustReplyEmpty') != -1:
         return ''
     return "OK"
 
@@ -134,19 +135,19 @@ def PCQuery(data):
     return Output(pc_value)
 
 mSwitch={
-    '$m':ReadMemory,
-    '$g':ReadRegisters,
-    '$G':WriteRegisters,
-    '$P':WriteRegisterN,
-    '$M':WriteMemory,
-    '$?':LastSignal,
-    '$s':Step,
-    '$c':Continue,
-    '$X':SetMemory,
-    '$Z':InsertBreakpoint,
-    '$z':DeleteBreakpoint,
-    '$v':VQuery,
-    '$p20':PCQuery,
+    '$m': ReadMemory,
+    '$g': ReadRegisters,
+    '$G': WriteRegisters,
+    '$P': WriteRegisterN,
+    '$M': WriteMemory,
+    '$?': LastSignal,
+    '$s': Step,
+    '$c': Continue,
+    '$X': SetMemory,
+    '$Z': InsertBreakpoint,
+    '$z': DeleteBreakpoint,
+    '$v': VQuery,
+    '$p20': PCQuery,
     }
 
 def Message(data):
@@ -156,6 +157,6 @@ def Message(data):
             return mSwitch[key](data)
     else:
         for key in config.switch:
-            if (data.find(key) != -1):
+            if data.find(key) != -1:
                 return config.switch[key]
     return 'OK'
