@@ -15,7 +15,8 @@ pc_value = var.pc
 
 def Output(data):
     # data is decimal value
-    value = hex(data)[2:]
+    #value = hex(data)[2:]
+    value = str(data)
     if (len(value) % 2) == 1:
         value = '0' + value
     word = ''
@@ -24,6 +25,9 @@ def Output(data):
         value = value[:-2]
     # int(a,16) -> convert to decimal
     return word
+
+def Input(data):
+    pass
 
 def ReadMemory(data):
     address = data[data.find('m')+1:data.find(',')]
